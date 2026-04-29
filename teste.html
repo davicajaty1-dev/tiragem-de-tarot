@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Tiragem de Tarô</title>
+
+<style>
+body {
+  margin: 0;
+  background: radial-gradient(circle, #1a1a1a, #000);
+  color: white;
+  font-family: Arial;
+  text-align: center;
+}
+
+/* HEADER */
+h2 {
+  margin-top: 20px;
+}
+
+/* CAIXA PRINCIPAL */
+.container {
+  max-width: 900px;
+  margin: auto;
+  padding: 20px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 15px;
+  box-shadow: 0 0 20px rgba(0,0,0,0.5);
+}
+
+/* INPUTS */
+input {
+  padding: 12px;
+  margin: 10px;
+  border-radius: 8px;
+  border: none;
+  width: 60%;
+}
+
+/* BOTÕES */
+button {
+  padding: 12px 20px;
+  border: none;
+  border-radius: 10px;
+  background: linear-gradient(45deg, #6a00ff, #a200ff);
+  color: white;
+  cursor: pointer;
+  font-weight: bold;
+  transition: 0.3s;
+}
+
+button:hover {
+  transform: scale(1.05);
+}
+
+/* CARTAS */
+.card {
+  width: 120px;
+  height: 200px;
+  perspective: 1000px;
+  display: inline-block;
+  margin: 15px;
+}
+
+.inner {
+  width: 100%;
+  height: 100%;
+  transition: transform 0.8s;
+  transform-style: preserve-3d;
+  position: relative;
+}
+
+.flip {
+  transform: rotateY(180deg);
+}
+
+.front, .back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 0 15px rgba(0,0,0,0.7);
+}
+
+.back {
+  transform: rotateY(180deg);
+}
+
+img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* TEXTO */
+#resultado {
+  margin-top: 20px;
+  white-space: pre-line;
+  text-align: left;
+}
+</style>
+</head>
+
+<body>
+
+<h2>🔮 Tiragem de Tarô</h2>
+
+<div class="container">
+
+<input id="nome" placeholder="Digite seu nome">
+<button onclick="entrar()">Entrar</button>
+
+<br>
+
+<input id="pergunta" placeholder="Digite sua pergunta">
+<button onclick="tirar()">Tirar Cartas</button>
+
+<div id="cartas"></div>
+
+<div id="resultado"></div>
+
+</div>
+
+<audio id="som" src="https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3"></audio>
+
+<script>
+
+let nomeUsuario = "";
+
+const cartas = [
+  { nome: "O Louco", img: "https://upload.wikimedia.org/wikipedia/commons/9/90/RWS_Tarot_00_Fool.jpg", significado: "novos começos" },
+  { nome: "O Mago", img: "https://upload.wikimedia.org/wikipedia/commons/d/de/RWS_Tarot_01_Magician.jpg", significado: "controle e ação" },
+  { nome: "A Imperatriz", img: "https://upload.wikimedia.org/wikipedia/commons/d/d2/RWS_Tarot_03_Empress.jpg", significado: "crescimento" },
+  { nome: "A Torre", img: "https://upload.wikimedia.org/wikipedia/commons/5/53/RWS_Tarot_16_Tower.jpg", significado: "ruptura" },
+  { nome: "O Sol", img: "https://upload.wikimedia.org/wikipedia/commons/1/17/RWS_Tarot_19_Sun.jpg", significado: "sucesso" },
+  { nome: "A Lua", img: "https://upload.wikimedia.org/wikipedia/commons/7/7f/RWS_Tarot_18_Moon.jpg", significado: "confusão" },
+  { nome: "A Estrela", img: "https://upload.wikimedia.org/wikipedia/commons/d/db/RWS_Tarot_17_Star.jpg", significado: "esperança" },
+  { nome: "A Morte", img: "https://upload.wikimedia.org/wikipedia/commons/d/d7/RWS_Tarot_13_Death.jpg", significado: "transformação" }
+];
+
+function entrar() {
+  let nome = document.getElementById("nome").value;
+
+  if (!nome) {
+    alert("Digite seu nome!");
+    return;
+  }
+
+  nomeUsuario = nome;
+}
+
+function tirar() {
+  let pergunta = document.getElementById("pergunta").value.toLowerCase();
+
+  if (!pergunta) {
+    alert("Digite uma pergunta!");
+    return;
+  }
+
+  let copia = [...cartas];
+  let html = "";
+  let leitura = "";
+  let palavras = [];
+
+  const posicoes = ["Passado", "Presente", "Obstáculo", "Futuro"];
+
+  for (let i = 0; i < 4; i++) {
+    let index = Math.floor(Math.random() * copia.length);
+    let carta = copia[index];
+
+    palavras.push(carta.significado);
+
+    html += `
+    <div class="card">
+      <div class="inner" id="carta${i}">
+        <div class="front">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Card_back_06.svg">
+        </div>
+        <div class="back">
+          <img src="${carta.img}">
+        </div>
+      </div>
+    </div>
+    `;
+
+    leitura += `${posicoes[i]}: ${carta.nome} → ${carta.significado}\n\n`;
+
+    copia.splice(index, 1);
+  }
+
+  document.getElementById("cartas").innerHTML = html;
+
+  for (let i = 0; i < 4; i++) {
+    setTimeout(() => {
+      document.getElementById("carta" + i).classList.add("flip");
+    }, i * 500);
+  }
+
+  setTimeout(() => {
+    document.getElementById("som").play();
+  }, 2500);
+
+  let texto = palavras.join(" ");
+
+  let conclusao = texto.includes("sucesso") 
+    ? "Existe uma tendência positiva, mas depende das suas atitudes."
+    : texto.includes("transformação") 
+    ? "Uma mudança forte pode acontecer e alterar o caminho."
+    : "A situação ainda exige mais análise antes de agir.";
+
+  let leituraProf = texto.includes("confusão")
+    ? "Há influência emocional afetando a clareza da situação."
+    : texto.includes("esperança")
+    ? "Mesmo com dificuldades, há sinais de melhora."
+    : "O resultado depende principalmente das suas escolhas.";
+
+  let resposta = `${nomeUsuario}, sua pergunta foi:\n"${pergunta}"\n\n`;
+  resposta += leitura;
+  resposta += "Conclusão: " + conclusao + "\n\n";
+  resposta += "Leitura profissional:\n" + leituraProf;
+
+  document.getElementById("resultado").innerText = resposta;
+
+  document.getElementById("pergunta").value = "";
+}
+
+</script>
+
+</body>
+</html>
